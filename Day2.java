@@ -16,20 +16,28 @@ public class Day2 {
 
         List<Entry> entries = lines.stream().map(Entry::of).flatMap(Optional::stream).collect(Collectors.toList());
 
-        long correctPasswords = entries.stream().filter(entry -> passwordCorrect(entry)).count();
+        // Task 1
+        long correctPasswordsLegacyPolicy = entries.stream().filter(entry -> isPasswordCorrectLegacyPolicy(entry))
+                .count();
+        System.out.println(correctPasswordsLegacyPolicy);
 
-        System.out.println(correctPasswords);
+        // Task 2
+        long correctPasswordsCorporatePolicy = entries.stream().filter(entry -> isPasswordCorrectCorporatePolicy(entry))
+                .count();
+        System.out.println(correctPasswordsCorporatePolicy);
     }
 
     private static class Entry {
-        private final int minOccurences;
-        private final int maxOccurences;
+        // the `first` and `second` variables have different meaning, depending on the
+        // task. In the real world, I would think about separate classes
+        private final int first;
+        private final int second;
         private final char checkedCharacter;
         private final String password;
 
-        private Entry(int minOccurences, int maxOccurences, char checkedCharacter, String password) {
-            this.minOccurences = minOccurences;
-            this.maxOccurences = maxOccurences;
+        private Entry(int first, int second, char checkedCharacter, String password) {
+            this.first = first;
+            this.second = second;
             this.checkedCharacter = checkedCharacter;
             this.password = password;
         }
@@ -41,15 +49,21 @@ public class Day2 {
                 return Optional.of(new Entry(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)),
                         matcher.group(3).charAt(0), matcher.group(4)));
             }
-            System.out.println("did not match");
+            System.out.println("Did not match: " + input); // or throw instead
             return Optional.empty();
         }
     }
 
-    private static boolean passwordCorrect(Entry entry) {
+    // In real wold: strategy pattern instead of two methods
+    private static boolean isPasswordCorrectLegacyPolicy(Entry entry) {
         long occurences = entry.password.chars().filter(c -> c == entry.checkedCharacter).count();
 
-        return occurences >= entry.minOccurences && occurences <= entry.maxOccurences;
+        return occurences >= entry.first && occurences <= entry.second;
+    }
+
+    private static boolean isPasswordCorrectCorporatePolicy(Entry entry) {
+        return entry.password.charAt(entry.first - 1) == entry.checkedCharacter
+                ^ entry.password.charAt(entry.second - 1) == entry.checkedCharacter;
     }
 
 }
