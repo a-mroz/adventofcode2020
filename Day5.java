@@ -3,6 +3,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -21,21 +22,33 @@ public class Day5 {
     public static void main(String[] args) throws IOException {
         List<String> lines = Files.readAllLines(Path.of("./input-day5"));
 
-        Supplier<Stream<Integer>> seatsStreamSupplier = () -> lines.stream().map(encoded -> toSeatNumber(encoded));
-        Integer max = seatsStreamSupplier.get().max(Comparator.naturalOrder()).orElseThrow();
-
-        // Part 1
+        // Part 1 using binary search
+        Supplier<IntStream> seatsStreamSupplier = () -> lines.stream().mapToInt(encoded -> toSeatNumber(encoded));
+        Integer max = seatsStreamSupplier.get().max().orElseThrow();
         System.out.println(max);
 
+        // Part 1 using binary encoding - this is actually a binary number where F and L
+        // = 0 and B and R = 1
+        int maxBinaryEncodingMethod = maxBinaryEncodingMethod(lines);
+        System.out.println(maxBinaryEncodingMethod);
+
         // Part 2
-        Integer min = seatsStreamSupplier.get().min(Comparator.naturalOrder()).orElseThrow();
-        Set<Integer> seats = seatsStreamSupplier.get().collect(Collectors.toSet());
+        Integer min = seatsStreamSupplier.get().min().orElseThrow();
+        Set<Integer> seats = seatsStreamSupplier.get().boxed().collect(Collectors.toSet());
 
         IntStream.range(min + 1, max).forEach(candidate -> {
             if (!seats.contains(candidate)) {
                 System.out.println(candidate);
             }
         });
+    }
+
+    private static int maxBinaryEncodingMethod(List<String> lines) {
+        return lines.stream()
+                .map(encoded -> encoded.replace(FRONT, '0').replace(LEFT, '0').replace(BACK, '1').replace(RIGHT, '1'))
+                .mapToInt(binary -> Integer.parseInt(binary.substring(0, 7), 2) * 8
+                        + Integer.parseInt(binary.substring(7), 2))
+                .max().orElseThrow();
     }
 
     private static int toSeatNumber(String encoded) {
