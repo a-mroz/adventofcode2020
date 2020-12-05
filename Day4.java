@@ -73,7 +73,6 @@ public class Day4 {
         Matcher matcher = HEIGHT_PATTERN.matcher(hgt);
         if (matcher.matches()) {
 
-            int value = Integer.parseInt(matcher.group(1));
             String unit = matcher.group(2);
 
             if (unit.equals("cm")) {
