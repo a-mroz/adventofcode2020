@@ -1,31 +1,65 @@
 import fileinput
 import re
-
-acc = 0
-
-run_instructions = set()
-
-instructions = []
-
-for l in fileinput.input():
-    instructions.append(l.strip().split(' '))
+import copy
 
 
-current_instr = 0
+def parse():
+    instructions = []
 
-while current_instr not in run_instructions:
-    instr, val = instructions[current_instr]
-    run_instructions.add(current_instr)
+    for l in fileinput.input():
+        instructions.append(l.strip().split(' '))
 
-    if instr == 'jmp':
-        current_instr += int(val)
-
-    if instr == 'acc':
-        acc += int(val)
-        current_instr += 1
-
-    if instr == 'nop':
-        current_instr += 1
+    return instructions
 
 
-print(acc)
+def execute(instructions):
+    current_instr = 0
+    acc = 0
+    executed_instructions = set()
+
+    while (current_instr not in executed_instructions) and (current_instr < len(instructions)):
+        instr, val = instructions[current_instr]
+        executed_instructions.add(current_instr)
+
+        if instr == 'jmp':
+            current_instr += int(val)
+
+        elif instr == 'acc':
+            acc += int(val)
+            current_instr += 1
+
+        elif instr == 'nop':
+            current_instr += 1
+        else:
+            print('Unrecognized: ', instr)
+
+    return current_instr >= len(instructions), acc
+
+
+# Part 2
+def fix_infinte_loop(instructions):
+    for i, instruction in enumerate(instructions):
+        if instruction[0] == 'jmp':
+            instr = copy.deepcopy(instructions)
+            instr[i][0] = 'nop'
+            finite, acc = execute(instr)
+
+            if finite:
+                return acc
+
+        if instruction[0] == 'nop':
+            instr = copy.deepcopy(instructions)
+            instr[i][0] = 'jmp'
+            finite, acc = execute(instr)
+
+            if finite:
+                return acc
+
+
+instructions = parse()
+
+# Part 1
+print(execute(instructions)[1])
+
+# Part 2
+print(fix_infinte_loop(instructions))
