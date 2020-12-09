@@ -1,6 +1,4 @@
 import fileinput
-import re
-import copy
 
 window_length = 25
 
