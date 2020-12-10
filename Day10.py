@@ -27,8 +27,30 @@ def task1(jolts):
     return diff_1 * diff_3
 
 
-def task2(numbers):
-    pass
+def task2(jolts):
+
+    # Dynamic programming
+    memory = {}
+
+    def count_ways_from(i):
+        if i >= len(jolts) - 1:
+            return 1
+
+        if i in memory:
+            return memory[i]
+
+        j = i + 1
+        ways = 0
+
+        while j < len(jolts) and jolts[j] - jolts[i] <= 3:
+            ways += count_ways_from(j)
+            j += 1
+
+        memory[i] = ways
+
+        return ways
+
+    return count_ways_from(0)
 
 
 # Part 1
