@@ -4,198 +4,101 @@ import copy
 
 
 def parse():
-    lines = []
-
-    for l in fileinput.input():
-        lines.append(list(l.strip()))
-
-    return lines
+    return [list(l.strip()) for l in fileinput.input()]
 
 
-def count_occupied(l):
+def count_occupied(grid):
     occupied = 0
-    for row in l:
+    for row in grid:
         occupied += sum([1 for seat in row if seat == '#'])
     return occupied
 
 
-def game_of_life_round(lines, count_neigbours, neighbours_to_switch_to_empty):
-    l = copy.deepcopy(lines)
+def game_of_life_round(grid, count_neigbours, neighbours_limit):
+    new_grid = copy.deepcopy(grid)
 
-    for row_idx in range(len(l)):
-        row = l[row_idx]
-        for col_idx in range(len(row)):
-            seat = row[col_idx]
+    for r in range(len(new_grid)):
+        row = new_grid[r]
+        for c in range(len(row)):
+            seat = row[c]
 
             if seat == '.':
                 continue
 
-            neigh = count_neigbours(lines, row_idx, col_idx)
-            if seat == 'L' and neigh == 0:
-                row[col_idx] = '#'
-            elif seat == '#' and neigh >= neighbours_to_switch_to_empty:
-                row[col_idx] = 'L'
+            neighbours = count_neigbours(grid, r, c)
 
-    return l
+            if seat == 'L' and neighbours == 0:
+                row[c] = '#'
+            elif seat == '#' and neighbours >= neighbours_limit:
+                row[c] = 'L'
+
+    return new_grid
 
 
-def task1(lines):
-
-    def neighbours(lines, i, j):
-        count = 0
-
-        # Line above
-        if i > 0:
-            if j > 0 and lines[i - 1][j - 1] == '#':
-                count += 1
-
-            if lines[i - 1][j] == '#':
-                count += 1
-
-            if j < (len(lines[i]) - 1) and lines[i - 1][j + 1] == '#':
-                count += 1
-
-        # The same line
-        if j > 0 and lines[i][j - 1] == '#':
-            count += 1
-
-        if j < (len(lines[i]) - 1) and lines[i][j + 1] == '#':
-            count += 1
-
-        # Line below
-        if (i < len(lines) - 1):
-            if j > 0 and lines[i + 1][j - 1] == '#':
-                count += 1
-
-            if lines[i + 1][j] == '#':
-                count += 1
-
-            if j < (len(lines[i]) - 1) and lines[i + 1][j + 1] == '#':
-                count += 1
-
-        return count
-
-    occupied = count_occupied(lines)
-    l = copy.deepcopy(lines)
+def find_stable_grid(grid, count_neighbours, neighbours_limit):
+    occupied = count_occupied(grid)
+    new_grid = copy.deepcopy(grid)
 
     while True:
-        # print('.')
-        l = game_of_life_round(l, neighbours, 4)
-        occupied_after_round = count_occupied(l)
+        new_grid = game_of_life_round(
+            new_grid, count_neighbours, neighbours_limit)
+        occupied_after_round = count_occupied(new_grid)
 
         if occupied_after_round == occupied:
-            return occupied
+            return new_grid
 
         occupied = occupied_after_round
 
-    return occupied
 
+def task1(grid):
 
-def task2(lines):
-
-    def count_neighbours(lines, i, j):
+    def neighbours(grid, r, c):
         count = 0
 
-        # Up
-        for tmp_row in range(i - 1, -1, -1):
-            candidate = lines[tmp_row][j]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:  # the same field
+                    continue
 
-        # Down
-        for tmp_row in range(i + 1, len(lines)):
-            candidate = lines[tmp_row][j]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
+                rr = r + dr
+                cc = c + dc
 
-        # Right
-        for tmp_col in range(j + 1, len(lines[i])):
-            candidate = lines[i][tmp_col]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
-
-        # Left
-        for tmp_col in range(j - 1, -1, -1):
-            candidate = lines[i][tmp_col]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
-
-        # Up and left
-        tmp = 1
-        while i - tmp >= 0 and j - tmp >= 0:
-            candidate = lines[i - tmp][j - tmp]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
-            tmp += 1
-
-        # Up and right
-        tmp = 1
-        while i - tmp >= 0 and j + tmp < len(lines[i]):
-            candidate = lines[i - tmp][j + tmp]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
-            tmp += 1
-
-        # Down and left
-        tmp = 1
-        while i + tmp < len(lines) and j - tmp >= 0:
-            candidate = lines[i + tmp][j - tmp]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
-            tmp += 1
-
-        # Down and right
-        tmp = 1
-        while i + tmp < len(lines) and j + tmp < len(lines[i]):
-            candidate = lines[i + tmp][j + tmp]
-            if candidate == '#':
-                count += 1
-                break
-            elif candidate == 'L':
-                break
-            tmp += 1
+                if 0 <= rr < len(grid) and 0 <= cc < len(grid[r]) and grid[rr][cc] == '#':
+                    count += 1
 
         return count
 
-    occupied = count_occupied(lines)
-    l = copy.deepcopy(lines)
+    return count_occupied(find_stable_grid(grid, neighbours, 4))
 
-    while True:
-        print('.')
-        l = game_of_life_round(l, count_neighbours, 5)
-        occupied_after_round = count_occupied(l)
 
-        if occupied_after_round == occupied:
-            return occupied
+def task2(grid):
 
-        occupied = occupied_after_round
+    def count_neighbours(grid, r, c):
+        count = 0
 
-    return occupied
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:  # the same field
+                    continue
 
-    # Part 1
-lines = parse()
-print(task1(lines))
+                rr = r + dr
+                cc = c + dc
+
+                while 0 <= rr < len(grid) and 0 <= cc < len(grid[r]) and grid[rr][cc] == '.':
+                    rr += dr
+                    cc += dc
+
+                if 0 <= rr < len(grid) and 0 <= cc < len(grid[r]) and grid[rr][cc] == '#':
+                    count += 1
+
+        return count
+
+    return count_occupied(find_stable_grid(grid, count_neighbours, 5))
+
+
+# Part 1
+grid = parse()
+print(task1(grid))
 
 # Part 2
-print(task2(lines))
+print(task2(grid))
