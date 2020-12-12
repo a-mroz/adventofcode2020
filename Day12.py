@@ -8,38 +8,18 @@ def parse():
 
 
 def task1(instructions):
-    def rotate_right(dir):
-        if dir == [0, 1]:
-            return [-1, 0]
-        if dir == [-1, 0]:
-            return [0, -1]
-        if dir == [0, -1]:
-            return [1, 0]
-        if dir == [1, 0]:
-            return [0, 1]
-        print('Unrecognized direction:', dir)
-
-    def rotate_left(dir):
-        if dir == [0, 1]:
-            return [1, 0]
-        if dir == [1, 0]:
-            return [0, -1]
-        if dir == [0, -1]:
-            return [-1, 0]
-        if dir == [-1, 0]:
-            return [0, 1]
-        print('Unrecognized direction:', dir)
-
     north = 0
     east = 0
 
-    current_dir = [0, 1]  # [north, east]
+    dirs = [(1, 0), (-1, 0), (0, -1), (1, 0)]  # North, east, sout, west
+
+    current_dir = 1  # east
 
     for dir, count in instructions:
 
         if dir == 'F':
-            north += current_dir[0] * count
-            east += current_dir[1] * count
+            north += dirs[current_dir][0] * count
+            east += dirs[current_dir][1] * count
         elif dir == 'N':
             north += count
         elif dir == 'S':
@@ -49,11 +29,10 @@ def task1(instructions):
         elif dir == 'W':
             east -= count
         elif dir == 'R':
-            for i in range(count // 90):
-                current_dir = rotate_right(current_dir)
+            current_dir = (current_dir + (count // 90)) % 4
         elif dir == 'L':
-            for i in range(count // 90):
-                current_dir = rotate_left(current_dir)
+            # one rotation to left == 3 rotations to right
+            current_dir = (current_dir + 3 * (count // 90)) % 4
         else:
             print('Unrecognized instruction')
     return abs(north) + abs(east)
@@ -79,15 +58,13 @@ def task2(grid):
         elif dir == 'W':
             waypoint_east -= count
         elif dir == 'R':
-            for i in range(count // 90):
-                waypoint_north, waypoint_east = waypoint_east, waypoint_north
-                waypoint_north *= -1
-
+            for _ in range(count // 90):
+                # rotation counterclockwise - https://calcworkshop.com/transformations/rotation-rules/
+                waypoint_north, waypoint_east = -waypoint_east, waypoint_north
         elif dir == 'L':
-            for i in range(4 - (count // 90)):
-                waypoint_north, waypoint_east = waypoint_east, waypoint_north
-                waypoint_north *= -1
-
+            for _ in range((count // 90)):
+                # rotation clockwise
+                waypoint_north, waypoint_east = waypoint_east, -waypoint_north
         else:
             print('Unrecognized instruction')
 
