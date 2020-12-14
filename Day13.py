@@ -27,21 +27,15 @@ def task1(ts, buses):
 
 
 # Inefficient, should use Chinese Rest Theorem
-def task2(buses):
-    res = int(buses[0])
-
-    while True:
-        found = True
-        for i, b in enumerate(buses):
-            if b == 'x' or i == 0:
-                continue
-            bus = int(b)
-            if res % bus != bus - i:
-                found = False
-                break
-        if found:
-            return res
-        res += int(buses[0])
+def task2(data):
+    buses = [x for x in data if type(x) is int]
+    mods = [-i % int(v) for i, v in enumerate(data) if v != 'x']
+    x, step = 0, 1
+    for d, r in zip(buses, mods):
+        while x % d != r:
+            x += step
+        step *= d
+    return x
 
 
 # Part 1
