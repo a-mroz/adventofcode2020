@@ -13,12 +13,9 @@ def task1(lines):
         ranges = {}
         for i, line in enumerate(lines[:20]):
             key = line.split(':')[0]
-            ranges[key] = []
-            for token in line.split(' '):
-                split = token.split('-')
-                if len(split) == 2:
-                    ranges[key].append(range(
-                        int(split[0]), int(split[1]) + 1))
+            a, b, c, d = re.findall(r'\d+', line)
+            ranges[key] = [range(int(a), int(b) + 1),
+                           range(int(c), int(d) + 1)]
         return ranges
 
     ranges = parse_to_ranges_dict()
@@ -88,6 +85,7 @@ def task2(valid_tickets, ranges):
             res *= my_ticket[v.pop()]
 
     return res
+
 
     # Part 1
 lines = parse()
