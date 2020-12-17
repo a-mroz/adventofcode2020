@@ -10,10 +10,12 @@ def parse():
 def task1(lines):
     world = []
 
+    empty_plane = [[['.' for _ in range(20)]
+                    for _ in range(20)]
+                   for _ in range(20)]
+
     for i in range(6):
-        empty_plane = [['.' for _ in range(20)]
-                       for _ in range(20)]
-        world.append(empty_plane)
+        world.append(copy.deepcopy(empty_plane))
 
     plane = []
 
@@ -73,7 +75,6 @@ def task1(lines):
                     n = count_neigbhours(world, x, y, z)
 
                     if world[z][y][x] == '#':
-                        print(z, y, x, n)
 
                         if n == 2 or n == 3:
                             updated[z][y][x] = '#'
@@ -82,8 +83,6 @@ def task1(lines):
                     else:
                         if n == 3:
                             updated[z][y][x] = '#'
-
-        print(world)
 
         world = updated
 
@@ -98,7 +97,104 @@ def task1(lines):
 
 
 def task2(lines):
-    pass
+    world = []
+
+    empty_plane = [[['.' for _ in range(20)]
+                    for _ in range(20)]
+                   for _ in range(20)]
+
+    for i in range(20):
+        world.append(copy.deepcopy(empty_plane))
+
+    # TODO fix hardcoded value
+
+    world[9][9][6][6] = '#'
+    world[9][9][6][10] = '#'
+    world[9][9][6][12] = '#'
+
+    world[9][9][7][8] = '#'
+    world[9][9][7][10] = '#'
+    world[9][9][7][12] = '#'
+    world[9][9][7][13] = '#'
+
+    world[9][9][8][8] = '#'
+    world[9][9][8][11] = '#'
+
+    world[9][9][9][11] = '#'
+    world[9][9][9][12] = '#'
+    world[9][9][9][13] = '#'
+
+    world[9][9][10][9] = '#'
+    world[9][9][10][11] = '#'
+    world[9][9][10][13] = '#'
+
+    world[9][9][11][6] = '#'
+    world[9][9][11][8] = '#'
+    world[9][9][11][10] = '#'
+    world[9][9][11][11] = '#'
+
+    world[9][9][12][6] = '#'
+    world[9][9][12][7] = '#'
+    world[9][9][12][8] = '#'
+    world[9][9][12][9] = '#'
+    world[9][9][12][10] = '#'
+
+    world[9][9][13][7] = '#'
+    world[9][9][13][9] = '#'
+    world[9][9][13][11] = '#'
+    world[9][9][13][12] = '#'
+
+   # for y in range((20 - len(lines)) / 2):
+   #     world[9][9] = lines
+
+   # print(world)
+
+    def count_neigbhours(world, x, y, z, w):
+        count = 0
+        for dw in [-1, 0, 1]:
+            for dz in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    for dx in [-1, 0, 1]:
+                        if dx == 0 and dy == 0 and dz == 0 and dw == 0:  # the same field
+                            continue
+
+                        ww = w + dw
+                        zz = z + dz
+                        yy = y + dy
+                        xx = x + dx
+
+                        if 0 <= ww < len(world) and 0 <= zz < len(world[w]) and 0 <= yy < len(world[w][z]) and 0 <= xx < len(world[w][z][y]) and world[ww][zz][yy][xx] == '#':
+                            count += 1
+        return count
+
+    for i in range(6):
+        updated = copy.deepcopy(world)
+        for w in range(len(world)):
+            for z in range(len(world[w])):
+                for y in range(len(world[w][z])):
+                    for x in range(len(world[w][z][y])):
+                        n = count_neigbhours(world, x, y, z, w)
+
+                        if world[w][z][y][x] == '#':
+                            if n == 2 or n == 3:
+                                updated[w][z][y][x] = '#'
+                            else:
+                                updated[w][z][y][x] = '.'
+                        else:
+                            if n == 3:
+                                updated[w][z][y][x] = '#'
+
+        world = updated
+
+    res = 0
+    for w in world:
+        for z in w:
+            for y in z:
+                for x in y:
+                    if x == '#':
+                        res += 1
+
+    return res
 
     # Part 1
 lines = parse()
