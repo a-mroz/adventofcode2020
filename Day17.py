@@ -7,6 +7,11 @@ def parse():
     return [list(l.strip()) for l in fileinput.input()]
 
 
+def bounding_box(active, idx):
+    indices = [cell[idx] for cell in active]
+    return range(min(indices) - 1, max(indices) + 2)
+
+
 def task1(lines):
     def count_neigbhours(world, x, y, z):
         count = 0
@@ -31,9 +36,9 @@ def task1(lines):
     for _ in range(6):
         new_active = set()
 
-        for x in range(-15, 15):
-            for y in range(-15, 15):
-                for z in range(-15, 15):
+        for x in bounding_box(active, 0):
+            for y in bounding_box(active, 1):
+                for z in bounding_box(active, 2):
                     n = count_neigbhours(active, x, y, z)
 
                     if (x, y, z) in active and (n == 2 or n == 3):
@@ -69,10 +74,10 @@ def task2(lines):
     for _ in range(6):
         new_active = set()
 
-        for x in range(-15, 15):
-            for y in range(-15, 15):
-                for z in range(-15, 15):
-                    for w in range(-15, 15):
+        for x in bounding_box(active, 0):
+            for y in bounding_box(active, 1):
+                for z in bounding_box(active, 2):
+                    for w in bounding_box(active, 3):
                         n = count_neigbhours(active, x, y, z, w)
 
                         if (x, y, z, w) in active and (n == 2 or n == 3):
