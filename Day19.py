@@ -21,85 +21,44 @@ def parse():
     return rules, messages
 
 
-def task1(rules, messages):
-
-    def recursive_regex(rule):
-        res = ''
-
-        for t in rule.split(' '):
-            if t.isdigit():
-                res += recursive_regex(rules[t])
-            elif t == '|':
-                res += t
-            elif t == '"a"':
-                res += 'a'
-            elif t == '"b"':
-                res += 'b'
+def recursive_regex(rules, rule_idx, in_loop_count=0):
+    rule = rules[rule_idx]
+    res = ''
+    
+    for t in rule.split(' '):
+        if t.isdigit():
+            loop = t == rule_idx
+            if loop:
+                # Hacky. if we're looping for more than 5 times, just skip it
+                if (in_loop_count > 5):
+                    continue
+                res += recursive_regex(rules, t, in_loop_count + 1)
             else:
-                print('Unknown token', t)
-                assert False
-
-        return res if '|' not in rule else '(' + res + ')'
-
-        return res
-
-    regex = '^' + recursive_regex(rules['0']) + '$'
-
-    res = 0
-
-    for m in messages:
-        if re.match(regex, m):
-            res += 1
-
-    return res
+                res += recursive_regex(rules, t)
+        elif t == '|':
+            res += t
+        elif t == '"a"':
+            res += 'a'
+        elif t == '"b"':
+            res += 'b'
+        else:
+            print('Unknown token', t)
+            assert False
+    return res if '|' not in rule else '(' + res + ')'
 
 
-def task2(rules, messages):
+def count_matching(rules, messages):
+    regex = re.compile(recursive_regex(rules, '0'))
 
-    def recursive_regex(rule_idx, in_loop_count=0):
-        rule = rules[rule_idx]
-        res = ''
-
-        for t in rule.split(' '):
-            if t.isdigit():
-                loop = t == rule_idx
-                if loop:
-                    # Hacky. if we're looping for more than 5 times, just skip it
-                    if (in_loop_count > 5):
-                        continue
-
-                    res += recursive_regex(t, in_loop_count + 1)
-                else:
-                    res += recursive_regex(t)
-            elif t == '|':
-                res += t
-            elif t == '"a"':
-                res += 'a'
-            elif t == '"b"':
-                res += 'b'
-            else:
-                print('Unknown token', t)
-                assert False
-
-        return res if '|' not in rule else '(' + res + ')'
-
-    regex = '^' + recursive_regex('0') + '$'
-
-    res = 0
-
-    for m in messages:
-        if re.match(regex, m):
-            res += 1
-
-    return res
+    return sum([1 if regex.fullmatch(message) else 0 for message in messages])
 
 
 # Part 1
 rules, messages = parse()
-print(task1(rules, messages))
+print(count_matching(rules, messages))
 
 # Part 2
 rules_with_loop = copy.deepcopy(rules)
 rules_with_loop['8'] = '42 | 42 8'
 rules_with_loop['11'] = '42 31 | 42 11 31'
-print(task2(rules_with_loop, messages))
+print(count_matching(rules_with_loop, messages))
