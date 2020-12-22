@@ -1,8 +1,4 @@
 import fileinput
-import re
-import copy
-import string
-from collections import Counter
 from collections import deque
 from itertools import islice
 
@@ -12,43 +8,18 @@ def parse():
     p2 = []
 
     player_1 = True
-    for l in fileinput.input():
+    for line in fileinput.input():
+        l = line.strip()
 
-        if l.strip().startswith('Player 1:'):
+        if l.startswith('Player 1:') or not l:
             continue
-        elif l.strip().startswith('Player 2:'):
+        elif l.startswith('Player 2:'):
             player_1 = False
             continue
-        elif l.strip() == '':
-            continue
-
-        if player_1:
-            p1.append(int(l.strip()))
+        elif player_1:
+            p1.append(int(l))
         else:
-            p2.append(int(l.strip()))
-    return p1, p2
-
-
-def play(player1, player2):
-    p1 = copy.deepcopy(player1)
-    p2 = copy.deepcopy(player2)
-
-    while len(p1) > 0 and len(p2) > 0:
-        h1, *t1 = p1
-        h2, *t2 = p2
-
-        if h1 >= h2:
-            t1.append(h1)
-            t1.append(h2)
-            p1 = t1
-            p2 = t2
-
-        else:
-            t2.append(h2)
-            t2.append(h1)
-            p1 = t1
-            p2 = t2
-
+            p2.append(int(l))
     return p1, p2
 
 
@@ -61,6 +32,24 @@ def score(deck):
         multiplier += 1
 
     return res
+
+
+def play(player1, player2):
+    p1 = deque(player1)
+    p2 = deque(player2)
+
+    while len(p1) > 0 and len(p2) > 0:
+        h1 = p1.popleft()
+        h2 = p2.popleft()
+
+        if h1 >= h2:
+            p1.append(h1)
+            p1.append(h2)
+        else:
+            p2.append(h2)
+            p2.append(h1)
+
+    return p1, p2
 
 
 def task1(player1, player2):
