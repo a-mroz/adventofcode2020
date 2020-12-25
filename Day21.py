@@ -41,41 +41,62 @@ def task1(food_with_alergens, allergens, ingredients):
 
         allergic_ingredients[a] = candidates
 
-    allergic = set()
+    non_alergic_ingredients = set(ingredients)
     for _, ingr in allergic_ingredients.items():
-        for i in ingr:
-            allergic.add(i)
+        non_alergic_ingredients -= ingr
 
-    res = set()
-    for f, _ in food_with_alergens:
-        for f1 in f:
-            if f1 not in allergic:
-                res.add(f1)
-
-    return res
+    return non_alergic_ingredients
 
 
-def task2(tiles, allergens, ingredients, not_allergic_ingredients):
+def task2(food_with_alergens, allergens, ingredients, not_allergic_ingredients):
     mapping = {}
+    candidates = {}
+
     known = set()
 
-    # while len(mapping) < len(allergens):
-    #     for i in ingredients:
-    #         candidates =
+    for allergen in allergens:
+        c = set(ingredients)
+        for i, a in food_with_alergens:
+            if allergen in a:
+                c &= i
+            candidates[allergen] = c.difference(not_allergic_ingredients)
 
-    # [('dairy', set()), ('eggs', {'dglm'}), ('fish', set()), ('peanuts', {'rbpg', 'zhqjs'}), ('sesame', {
-    #     'xvtrfz'}), ('shellfish', {'tgmzqjz'}), ('soy', {'mfqgx'}), ('wheat', {'rffqhl', 'cdqvp'})]
+    while len(mapping) < len(allergens):
+        for allergen in allergens:
+            if allergen in mapping.keys():
+                continue
 
-    res = 0
-    return res
+            candidate = set(candidates[allergen])
+            candidate = candidate.difference(known)
+            candidates[allergen] = candidate
+
+            if len(candidate) == 1:
+                k = next(iter(candidate))
+                mapping[allergen] = k
+
+                known.add(k)
+
+    return mapping
 
 
 # Part 1
 food_with_alergens, allergens, ingredients = parse()
-
-
 not_allergic_ingredients = task1(food_with_alergens, allergens, ingredients)
-print(len(not_allergic_ingredients))
+
+non_allergic_occurences = 0
+for (ingr, _) in food_with_alergens:
+    for i in ingr:
+        if i in not_allergic_ingredients:
+            non_allergic_occurences += 1
+
+print(non_allergic_occurences)
+
 
 # Part 2
-print(task2(food_with_alergens, allergens, ingredients, not_allergic_ingredients))
+allergen_to_food = task2(food_with_alergens, allergens,
+                         ingredients, not_allergic_ingredients)
+
+
+print(sorted(allergen_to_food.items()))
+
+print(','.join([v for _, v in sorted(allergen_to_food.items())]))
