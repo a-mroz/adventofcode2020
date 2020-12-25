@@ -1,5 +1,5 @@
 import fileinput
-from collections import deque
+from collections import deque, defaultdict
 from itertools import islice, chain
 
 DIRS = {'nw': (-1, -1),
@@ -51,17 +51,45 @@ def task1(directions):
         else:
             black_tiles.add(point)
 
-    return len(black_tiles)
+    return black_tiles
 
 
-def task2():
-    pass
+def task2(initial_black):
+    floor = initial_black
+
+    for _ in range(100):
+        new_floor = set(floor)
+        all_tiles = set()
+        neighbours = defaultdict(int)
+
+        for tile in floor:
+            all_tiles.add(tile)
+
+            for direction in DIRS.values():
+                neighbour = (tile[0] + direction[0], tile[1] + direction[1])
+                all_tiles.add(neighbour)
+                # we're iterating over blacks, so each of its neighbour have one black tile as a neighbour
+                neighbours[neighbour] += 1
+
+        for tile in all_tiles:
+            black = tile in floor
+            n = neighbours[tile]
+
+            if black and (n == 0 or n > 2):
+                new_floor.remove(tile)
+            if not black and n == 2:
+                new_floor.add(tile)
+
+        floor = new_floor
+
+    return floor
 
 
 # Part 1
 directions = parse()
-print(task1(directions))
+initial_black = task1(directions)
+print(len(initial_black))
 
 
 # Part 2
-print(task2())
+print(len(task2(initial_black)))
