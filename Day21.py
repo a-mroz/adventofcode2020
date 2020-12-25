@@ -26,43 +26,58 @@ def parse():
     return food_with_alergens, all_allergens, all_ingredients
 
 
-def task1(food_with_alergens, allergens, ingredients):
+def non_allergic_ingredients(food_with_alergens, all_allergens, all_ingredients):
     allergic_ingredients = {}
 
-    for a in allergens:
-        candidates = None
+    for allergen in all_allergens:
+        candidates = set(all_ingredients)
 
-        for ingr, al in food_with_alergens:
-            if a in al:
-                if candidates is None:
-                    candidates = set(ingr)
-                else:
-                    candidates = candidates.intersection(ingr)
+        for ingredients, allergens in food_with_alergens:
+            if allergen in allergens:
+                candidates &= ingredients
 
-        allergic_ingredients[a] = candidates
+        allergic_ingredients[allergen] = candidates
 
-    non_alergic_ingredients = set(ingredients)
-    for _, ingr in allergic_ingredients.items():
-        non_alergic_ingredients -= ingr
+    non_alergic_ingredients = set(all_ingredients)
+    for _, ingredients in allergic_ingredients.items():
+        non_alergic_ingredients -= ingredients
 
     return non_alergic_ingredients
 
 
-def task2(food_with_alergens, allergens, ingredients, not_allergic_ingredients):
-    mapping = {}
+def task1(food_with_alergens, not_allergic):
+    non_allergic_occurences = 0
+
+    for ingredients, _ in food_with_alergens:
+        for ingredient in ingredients:
+            if ingredient in not_allergic:
+                non_allergic_occurences += 1
+
+    print(non_allergic_occurences)
+
+
+def ingredients_by_allergy(food_with_allergens, all_allergens, all_ingredients, not_allergic_ingredients):
     candidates = {}
 
-    known = set()
-
-    for allergen in allergens:
-        c = set(ingredients)
-        for i, a in food_with_alergens:
+    for allergen in all_allergens:
+        c = set(all_ingredients)
+        for i, a in food_with_allergens:
             if allergen in a:
                 c &= i
             candidates[allergen] = c.difference(not_allergic_ingredients)
 
-    while len(mapping) < len(allergens):
-        for allergen in allergens:
+    return candidates
+
+
+def task2(food_with_alergens, all_allergens, all_ingredients, not_allergic_ingredients):
+    mapping = {}
+    candidates = ingredients_by_allergy(
+        food_with_alergens, all_allergens, all_ingredients, not_allergic_ingredients)
+
+    known = set()
+
+    while len(mapping) < len(all_allergens):
+        for allergen in all_allergens:
             if allergen in mapping.keys():
                 continue
 
@@ -81,22 +96,14 @@ def task2(food_with_alergens, allergens, ingredients, not_allergic_ingredients):
 
 # Part 1
 food_with_alergens, allergens, ingredients = parse()
-not_allergic_ingredients = task1(food_with_alergens, allergens, ingredients)
 
-non_allergic_occurences = 0
-for (ingr, _) in food_with_alergens:
-    for i in ingr:
-        if i in not_allergic_ingredients:
-            non_allergic_occurences += 1
+non_allergic_ingredients = non_allergic_ingredients(
+    food_with_alergens, allergens, ingredients)
 
-print(non_allergic_occurences)
-
+task1(food_with_alergens, non_allergic_ingredients)
 
 # Part 2
 allergen_to_food = task2(food_with_alergens, allergens,
-                         ingredients, not_allergic_ingredients)
-
-
-print(sorted(allergen_to_food.items()))
+                         ingredients, non_allergic_ingredients)
 
 print(','.join([v for _, v in sorted(allergen_to_food.items())]))
