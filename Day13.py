@@ -8,13 +8,12 @@ def parse():
     return int(lines[0]), lines[1].strip().split(',')
 
 
-def task1(ts, buses):
+def task1(timestamp, buses):
     min_bus = None
     min_time = None
 
-    def diff(b):
-        tmp = ts // b
-        return ((ts // b) + 1) * b - ts
+    def diff(bus):
+        return ((timestamp // bus) + 1) * bus - timestamp
 
     for b in [int(b) for b in buses if b is not 'x']:
         d = diff(b)
@@ -28,17 +27,28 @@ def task1(ts, buses):
 
 # Inefficient, should use Chinese Rest Theorem
 def task2(data):
-    buses = [x for x in data if type(x) is int]
-    mods = [-i % int(v) for i, v in enumerate(data) if v != 'x']
-    x, step = 0, 1
-    for d, r in zip(buses, mods):
-        while x % d != r:
-            x += step
-        step *= d
-    return x
+    """
+        We can write it as a set of equations:
+        (t + bus_index) % bus_time = 0
 
+        Instead of checking every possibility, we can speed things up by incrementing by current bus time (instead of 1), as next value mod current bus time must be 0 too (and so on, hence multiplication)
 
-# Part 1
+        Buses times must be coprime (their gcd must be 1, pairwise).
+    """
+
+    buses = [(bus_index, int(bus_time)) for bus_index, bus_time in enumerate(
+        data) if bus_time.isnumeric()]
+    res = 1
+    step = 1
+
+    for bus_index, bus_time in buses:
+        while (res + bus_index) % bus_time != 0:
+            res += step
+        step *= bus_time
+
+    return res
+
+    # Part 1
 ts, buses = parse()
 print(task1(ts, buses))
 
